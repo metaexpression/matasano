@@ -1,0 +1,28 @@
+;; This buffer is for notes you don't want to save, and for Lisp evaluation.
+;; If you want to create a file, visit that file with C-x C-f,
+;; then enter the text in that file's own buffer.
+
+Alright, so we have the byte we need to decrypt, which starts at block-size.
+
+(4-byte blocks)
+
+the block 'I' is known in both encrypted and decrypted format
+
+IIII XXXX YYYY ZZZZ
+     ^
+
+So, then we push that to the end of the block(?)
+
+AAAI IIIX XXXY YYYZ
+        ^
+
+Then we have a block which we know three of the four decrypted bytes, and we can make a dictionary by
+Feeding a whole block into the oracle and getting the first encrypted block, and comparing against the
+encrypted version of the block.
+
+iter (for byte-to-decrypt from block-size below bytes-to-decrypt)
+	  (for target-block-index = (floor byte-to-decrypt / block-size)) ;; the index of the block our index is in
+	  (for padding = (block-size - (byte-to-decrpyt % block-size))) ;; the amount of padding to add to the string as input
+	  (for encrypted-block = (get-block target-block-index (call oracle (solid-vector padding #xaa))))
+	  iter (for x from 0 to 255)
+			 (with trial-table = (make-hash-table ))
